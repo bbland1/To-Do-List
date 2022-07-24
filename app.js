@@ -14,7 +14,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-mongoose.connect("mongoDB://localhost:27017/todolistDB");
+mongoose.connect("mongodb://localhost:27017/todolistDB");
 
 const itemsSchema = new mongoose.Schema({
   name: String
@@ -23,24 +23,35 @@ const itemsSchema = new mongoose.Schema({
 const Item = mongoose.model("Item", itemsSchema);
 
 const item1 = new Item({
-  name: "Take the dogs for a walk"
+  name: "Welcome to the todolist!"
 });
 
 const item2 = new Item({
-  name: "Buy more coffee"
+  name: "Hit the + button to add a new item."
 });
 
 const item3 = new Item({
-  name: "Update the code"
+  name: "<-- Hit this to mark as done."
 });
 
+const defaultItems = [item1, item2, item3];
 
+Item.insertMany(defaultItems, (err) => {
+  if (err) {
+    console.log(err);
+  } else {
+    console.log("Successfully added default items to database.");
+  }
+});
 
 // Todo app
 // home route
 app.get('/', (req, res) => {
 
-  res.render("list", { listTitle: "Today", newListItems: items })
+  res.render("list", {
+    listTitle: "Today",
+    newListItems: items
+  });
 });
 
 // taking the inputed new item from the form and inputing it into the list
