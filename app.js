@@ -61,19 +61,27 @@ app.get('/', (req, res) => {
   });
 });
 
-// taking the inputed new item from the form and inputing it into the list
+// functionality to add a new item to the list & database
 app.post("/", (req, res) => {
-  const item = req.body.newItem;
+  const itemName = req.body.newItem;
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  }
-  else {
-    items.push(item);
-    res.redirect("/");
-  }
+  const newItem = Item.create({name: itemName});
+  res.redirect("/");
 });
+
+// functionality to remove the completed item from list & database
+app.post("/delete", (req, res) => {
+  const completedItemId = (req.body.checkbox);
+
+  Item.findByIdAndRemove(completedItemId, (err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Item deleted from database.");
+    }
+  });
+  res.redirect("/");
+})
 
 // making a list with the name work list 
 app.get("/work", (req, res) => {

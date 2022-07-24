@@ -10,10 +10,12 @@
   <div class="box">
     <!-- looping over the items array to put the items in list-->
     <% newListItems.forEach((item) => { %>
-    <div class="item">
-      <input type="checkbox">
-      <p><%= item.name %></p>
-    </div>
+    <form action="/delete" method="post">
+      <div class="item">
+        <input type="checkbox" onchange="this.form.submit()" name="checkbox" value="<%=item._id %>">
+        <p><%= item.name %></p>
+      </div>
+    </form>
     <% }) %>
     <!-- input new item to list -->
     <form action="/" method="post" class="item">
