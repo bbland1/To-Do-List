@@ -1,38 +1,46 @@
 // inital dependencies & variables need for setup
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+// app variables
+const port = 3000;
 const app = express();
-const date = require(__dirname + "/date.js");
 
 
 // Middleware
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(express.static("public"));
 
-// app variables
-const port = 3000;
+mongoose.connect("mongoDB://localhost:27017/todolistDB");
 
-const items = [
-  "Do yoga",
-  "Buy apples",
-  "Take the dogs for a walk"
-];
+const itemsSchema = new mongoose.Schema({
+  name: String
+});
 
-const workItems = [
-  "Put in vacation time",
-  "Do coworker code review"
-];
+const Item = mongoose.model("Item", itemsSchema);
+
+const item1 = new Item({
+  name: "Take the dogs for a walk"
+});
+
+const item2 = new Item({
+  name: "Buy more coffee"
+});
+
+const item3 = new Item({
+  name: "Update the code"
+});
+
 
 
 // Todo app
 // home route
 app.get('/', (req, res) => {
-  const day = date.getDate();
 
-  res.render("list", { listTitle: day, newListItems: items })
+  res.render("list", { listTitle: "Today", newListItems: items })
 });
 
 // taking the inputed new item from the form and inputing it into the list
