@@ -2,6 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const _ = require('lodash');
 
 // app variables
 const port = 3000;
@@ -44,7 +45,6 @@ const listSchema = new mongoose.Schema({
 const List = mongoose.model("List", listSchema);
 
 // Todo app
-// home route
 app.get('/', (req, res) => {
 
   Item.find({}, (err, foundItems) => {
@@ -69,7 +69,7 @@ app.get('/', (req, res) => {
 });
 
 app.get("/:customListName", (req, res) => {
-  const customListName = req.params.customListName;
+  const customListName = _.capitalize(req.params.customListName);
 
   List.findOne({ name: customListName }, (err, foundLists) => {
     if (!err) {
@@ -115,21 +115,30 @@ app.post("/", (req, res) => {
 
 // functionality to remove the completed item from list & database
 app.post("/delete", (req, res) => {
-  const completedItemId = (req.body.checkbox);
+  const completedItemId = req.body.checkbox;
+  const listName = req.body.listName;
 
-  Item.findByIdAndRemove(completedItemId, (err) => {
-    if (!err) {
-      console.log("Item deleted from database.");
-    }
-  });
-  res.redirect("/");
-})
-
-app.get("/about", (req, res) => {
-  res.render("about")
-})
+  if (listName === "Today") {
+    Item.findByIdAndRemove(completedItemId, (err) => {
+      if (!err) {
+        console.log("Item deleted from database.");
+        res.redirect("/");
+      }
+    });
+  } else {
+    List.findOneAndUpdate(
+      { name: listName },
+      { $pull: { items: { _id: completedItemId } } },
+      (err, foundList) => {
+        if (!err) {
+          console.log("Item deleted from database.");
+          res.redirect("/" + listName);
+        }
+      });
+  }
+});
 
 // Port to listen for from the server 
 app.listen(port, () => {
   console.log(`Sever started on port ${port}`)
-})
+});
