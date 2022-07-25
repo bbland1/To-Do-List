@@ -2,7 +2,7 @@
 
 Jul 2022
 
-A simple to-do list that is currently deployed on Heroku Heroku [here](https://serene-shore-54412.herokuapp.com)
+A simple to-do list that is currently deployed on Heroku [here](https://serene-shore-54412.herokuapp.com)
 
 - Front-end: EJS
 - Back-end: Node
