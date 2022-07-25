@@ -5,8 +5,12 @@ const mongoose = require('mongoose');
 const _ = require('lodash');
 
 // app variables
-const port = 3000;
 const app = express();
+
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
 
 
 // Middleware
@@ -15,6 +19,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+// Setting up a database this local would be set to the proper database server for the live app not included here for security
 mongoose.connect("mongodb://localhost:27017/todolistDB");
 
 const itemsSchema = new mongoose.Schema({
@@ -68,6 +73,7 @@ app.get('/', (req, res) => {
   });
 });
 
+// functionality to make the custom lists
 app.get("/:customListName", (req, res) => {
   const customListName = _.capitalize(req.params.customListName);
 
@@ -105,6 +111,7 @@ app.post("/", (req, res) => {
     newItem.save();
     res.redirect("/");
   } else {
+    // find the custom list and add item specifically to it
     List.findOne({ name: listName }, (err, foundList) => {
       foundList.items.push(newItem);
       foundList.save();
@@ -126,6 +133,7 @@ app.post("/delete", (req, res) => {
       }
     });
   } else {
+    // find the custome list item to delete properly
     List.findOneAndUpdate(
       { name: listName },
       { $pull: { items: { _id: completedItemId } } },
