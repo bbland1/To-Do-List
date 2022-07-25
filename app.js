@@ -1,64 +1,144 @@
 // inital dependencies & variables need for setup
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const _ = require('lodash');
+
+// app variables
+const port = 3000;
 const app = express();
-const date = require(__dirname + "/date.js");
 
 
 // Middleware
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(express.static("public"));
 
-// app variables
-const port = 3000;
+mongoose.connect("mongodb://localhost:27017/todolistDB");
 
-const items = [
-  "Do yoga",
-  "Buy apples",
-  "Take the dogs for a walk"
-];
+const itemsSchema = new mongoose.Schema({
+  name: String
+});
 
-const workItems = [
-  "Put in vacation time",
-  "Do coworker code review"
-];
+const Item = mongoose.model("Item", itemsSchema);
 
+const item1 = new Item({
+  name: "Welcome to the todolist!"
+});
+
+const item2 = new Item({
+  name: "Hit the + button to add a new item."
+});
+
+const item3 = new Item({
+  name: "<-- Hit this to mark as done."
+});
+
+const defaultItems = [item1, item2, item3];
+
+const listSchema = new mongoose.Schema({
+  name: String,
+  items: [itemsSchema]
+});
+
+const List = mongoose.model("List", listSchema);
 
 // Todo app
-// home route
 app.get('/', (req, res) => {
-  const day = date.getDate();
 
-  res.render("list", { listTitle: day, newListItems: items })
+  Item.find({}, (err, foundItems) => {
+
+    if (foundItems.length === 0) {
+      Item.insertMany(defaultItems, (err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Successfully added default items to database.");
+        }
+      });
+      res.redirect("/");
+    }
+    else {
+      res.render("list", {
+        listTitle: "Today",
+        newListItems: foundItems
+      });
+    }
+  });
 });
 
-// taking the inputed new item from the form and inputing it into the list
-app.post("/", (req, res) => {
-  const item = req.body.newItem;
+app.get("/:customListName", (req, res) => {
+  const customListName = _.capitalize(req.params.customListName);
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  }
-  else {
-    items.push(item);
-    res.redirect("/");
-  }
-});
-
-// making a list with the name work list 
-app.get("/work", (req, res) => {
-  res.render("list", { listTitle: "Work List", newListItems: workItems })
-});
-
-app.get("/about", (req, res) => {
-  res.render("about")
+  List.findOne({ name: customListName }, (err, foundLists) => {
+    if (!err) {
+      if (!foundLists) {
+        // Create a new List
+        List.create({
+          name: customListName,
+          items: defaultItems
+        });
+        res.redirect("/" + customListName);
+      }
+      else {
+        // Show existing Lists
+        res.render("list", {
+          listTitle: foundLists.name,
+          newListItems: foundLists.items
+        });
+      }
+    }
+  });
 })
+
+// functionality to add a new item to the list & database
+app.post("/", (req, res) => {
+  const itemName = req.body.newItem;
+  const listName = req.body.list;
+
+  const newItem = new Item({
+    name: itemName
+  });
+
+  if (listName === "Today") {
+    newItem.save();
+    res.redirect("/");
+  } else {
+    List.findOne({ name: listName }, (err, foundList) => {
+      foundList.items.push(newItem);
+      foundList.save();
+      res.redirect("/" + listName)
+    })
+  }
+});
+
+// functionality to remove the completed item from list & database
+app.post("/delete", (req, res) => {
+  const completedItemId = req.body.checkbox;
+  const listName = req.body.listName;
+
+  if (listName === "Today") {
+    Item.findByIdAndRemove(completedItemId, (err) => {
+      if (!err) {
+        console.log("Item deleted from database.");
+        res.redirect("/");
+      }
+    });
+  } else {
+    List.findOneAndUpdate(
+      { name: listName },
+      { $pull: { items: { _id: completedItemId } } },
+      (err, foundList) => {
+        if (!err) {
+          console.log("Item deleted from database.");
+          res.redirect("/" + listName);
+        }
+      });
+  }
+});
 
 // Port to listen for from the server 
 app.listen(port, () => {
   console.log(`Sever started on port ${port}`)
-})
+});

@@ -1,25 +1,28 @@
-<%- include("header"); %> 
-  <header>
-    <div class="box" id="heading">
-      <h1><%= listTitle %></h1>
-    </div>
-  </header>
+<%- include("header"); %>
+<header>
+  <div class="box" id="heading">
+    <h1><%= listTitle %></h1>
+  </div>
+</header>
 
-  <main>
-    <!-- the list that is already there  -->
-    <div class="box">
-      <!-- looping over the items array to put the items in list-->
-      <% for(let i = 0; i<newListItems.length; i++) { %>
+<main>
+  <!-- the list that is already there  -->
+  <div class="box">
+    <!-- looping over the items array to put the items in list-->
+    <% newListItems.forEach((item) => { %>
+    <form action="/delete" method="post">
       <div class="item">
-        <input type="checkbox">
-        <p><%= newListItems[i]%></p>
+        <input type="checkbox" onChange="this.form.submit()" name="checkbox" value="<%= item._id %>">
+        <p><%= item.name %></p>
       </div>
-      <% } %>
-      <!-- input new item to list -->
-      <form action="/" method="post" class="item">
-        <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
-        <button type="submit" name="list" value=<%= listTitle %>>+</button>
-      </form>
-    </div>
-  </main>
-  <%- include("footer"); %> 
+      <input type="hidden" name="listName" value="<%= listTitle %>"></input>
+    </form>
+    <% }) %>
+    <!-- input new item to list -->
+    <form action="/" method="post" class="item">
+      <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
+      <button type="submit" name="list" value="<%= listTitle %>">+</button>
+    </form>
+  </div>
+</main>
+<%- include("footer"); %>
