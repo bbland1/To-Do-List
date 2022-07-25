@@ -36,6 +36,13 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
+const listSchema = new mongoose.Schema({
+  name: String,
+  items: [itemsSchema]
+});
+
+const List = mongoose.model("List", listSchema);
+
 // Todo app
 // home route
 app.get('/', (req, res) => {
@@ -61,11 +68,37 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get("/:customListName", (req, res) => {
+  const customListName = req.params.customListName;
+
+  List.findOne({ name: customListName }, (err, foundLists) => {
+    if (!err) {
+      if (!foundLists) {
+        // Create a new List
+        List.create({
+          name: customListName,
+          items: defaultItems
+        });
+        res.redirect("/" + customListName);
+      }
+      else {
+        // Show existing Lists
+        res.render("list", {
+          listTitle: foundLists.name,
+          newListItems: foundLists.items
+        });
+      }
+    }
+  });
+})
+
 // functionality to add a new item to the list & database
 app.post("/", (req, res) => {
   const itemName = req.body.newItem;
 
-  const newItem = Item.create({name: itemName});
+  Item.create({
+    name: itemName
+  });
   res.redirect("/");
 });
 
@@ -74,9 +107,7 @@ app.post("/delete", (req, res) => {
   const completedItemId = (req.body.checkbox);
 
   Item.findByIdAndRemove(completedItemId, (err) => {
-    if (err) {
-      console.log(err);
-    } else {
+    if (!err) {
       console.log("Item deleted from database.");
     }
   });
