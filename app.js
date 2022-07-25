@@ -95,11 +95,22 @@ app.get("/:customListName", (req, res) => {
 // functionality to add a new item to the list & database
 app.post("/", (req, res) => {
   const itemName = req.body.newItem;
+  const listName = req.body.list;
 
-  Item.create({
+  const newItem = new Item({
     name: itemName
   });
-  res.redirect("/");
+
+  if (listName === "Today") {
+    newItem.save();
+    res.redirect("/");
+  } else {
+    List.findOne({ name: listName }, (err, foundList) => {
+      foundList.items.push(newItem);
+      foundList.save();
+      res.redirect("/" + listName)
+    })
+  }
 });
 
 // functionality to remove the completed item from list & database
@@ -113,11 +124,6 @@ app.post("/delete", (req, res) => {
   });
   res.redirect("/");
 })
-
-// making a list with the name work list 
-app.get("/work", (req, res) => {
-  res.render("list", { listTitle: "Work List", newListItems: workItems })
-});
 
 app.get("/about", (req, res) => {
   res.render("about")
