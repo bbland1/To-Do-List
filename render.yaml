@@ -9,6 +9,4 @@ services:
     plan: free # optional; defaults to starter
     numInstances: 1
     envVars:
-      - key: MONGO_DB # Imported from Heroku app
-        value: mongodb+srv://admin-brianna:BreadPotterMaDB5@cluster0.dgtaqvv.mongodb.net/todolistDB
 
