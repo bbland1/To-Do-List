@@ -1,4 +1,5 @@
 // inital dependencies & variables need for setup
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -20,7 +21,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 // Setting up a database this local would be set to the proper database server for the live app not included here for security
-mongoose.connect("mongodb://localhost:27017/todolistDB");
+mongoose.connect(process.env.MONGO_DB);
 
 const itemsSchema = new mongoose.Schema({
   name: String
