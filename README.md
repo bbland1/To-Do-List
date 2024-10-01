@@ -10,7 +10,6 @@ Clicking the link below will take you to the home/main list named today. In the 
 
 For a new list to be made `/:listname` needs to be added to the end of the url with the name that you would want that list to be. You will be redirected to that list and can add or delete items the same way as above. In the future you can return to this list by typing the url with the `/:listName` and it will take you to it again.
 
-* Deployement: https://serene-shore-54412.onrender.com
 
 ## Requirements
 Install all the dependecies of this project by using the [package.json](./package.json). For this project you will need to have [installed Mongo DB](https://www.mongodb.com/try/download/community) on your computer for local development.
